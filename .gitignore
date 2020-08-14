@@ -42,7 +42,8 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
-### Visual Studio
+### Visual Studio Code
+*.code-workspace
 
 # User-specific files
 *.suo
