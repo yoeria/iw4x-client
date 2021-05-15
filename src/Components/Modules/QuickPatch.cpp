@@ -708,6 +708,10 @@ namespace Components
 		// Patch SV_IsClientUsingOnlineStatsOffline
 		Utils::Hook::Set<DWORD>(0x46B710, 0x90C3C033);
 
+		// Testing:
+		// Disable cheat protection for dvars
+		Utils::Hook::Set<BYTE>(0x647682, 0xEB);
+
 		// Fix mouse lag
 		Utils::Hook::Nop(0x4731F5, 8);
 		Scheduler::OnFrame([]()
