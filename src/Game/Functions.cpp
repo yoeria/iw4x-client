@@ -136,6 +136,7 @@ namespace Game
 	FS_BuildPathToFile_t FS_BuildPathToFile = FS_BuildPathToFile_t(0x4702C0);
 	FS_IsShippedIWD_t FS_IsShippedIWD = FS_IsShippedIWD_t(0x642440);
 
+	G_GetWeaponIndexForName_t G_GetWeaponIndexForName = G_GetWeaponIndexForName_t(0x49E540);
 	G_SpawnEntitiesFromString_t G_SpawnEntitiesFromString = G_SpawnEntitiesFromString_t(0x4D8840);
 
 	GScr_LoadGameTypeScript_t GScr_LoadGameTypeScript = GScr_LoadGameTypeScript_t(0x4ED9A0);
@@ -194,6 +195,7 @@ namespace Game
 
 	NET_AdrToString_t NET_AdrToString = NET_AdrToString_t(0x469880);
 	NET_CompareAdr_t NET_CompareAdr = NET_CompareAdr_t(0x4D0AA0);
+	NET_DeferPacketToClient_t NET_DeferPacketToClient = NET_DeferPacketToClient_t(0x4C8AA0);
 	NET_ErrorString_t NET_ErrorString = NET_ErrorString_t(0x4E7720);
 	NET_Init_t NET_Init = NET_Init_t(0x491860);
 	NET_IsLocalAddress_t NET_IsLocalAddress = NET_IsLocalAddress_t(0x402BD0);
@@ -253,6 +255,8 @@ namespace Game
 	Scr_AddObject_t Scr_AddObject = Scr_AddObject_t(0x430F40);
 	Scr_Notify_t Scr_Notify = Scr_Notify_t(0x4A4750);
 	Scr_NotifyLevel_t Scr_NotifyLevel = Scr_NotifyLevel_t(0x4D9C30);
+	Scr_Error_t Scr_Error = Scr_Error_t(0x61E8B0);
+	Scr_GetType_t Scr_GetType = Scr_GetType_t(0x422900);
 
 	Scr_ClearOutParams_t Scr_ClearOutParams = Scr_ClearOutParams_t(0x4386E0);
 
@@ -293,6 +297,7 @@ namespace Game
 	SV_DirectConnect_t SV_DirectConnect = SV_DirectConnect_t(0x460480);
 	SV_SetConfigstring_t SV_SetConfigstring = SV_SetConfigstring_t(0x4982E0);
 	SV_Loaded_t SV_Loaded = SV_Loaded_t(0x4EE3E0);
+	SV_ClientThink_t SV_ClientThink = SV_ClientThink_t(0x44ADD0);
 
 	Sys_Error_t Sys_Error = Sys_Error_t(0x4E0200);
 	Sys_FreeFileList_t Sys_FreeFileList = Sys_FreeFileList_t(0x4D8580);
@@ -342,6 +347,7 @@ namespace Game
 	source_t **sourceFiles = reinterpret_cast<source_t **>(0x7C4A98);
 	keywordHash_t **menuParseKeywordHash = reinterpret_cast<keywordHash_t **>(0x63AE928);
 
+	int* svs_time = reinterpret_cast<int*>(0x31D9384);
 	int* svs_numclients = reinterpret_cast<int*>(0x31D938C);
 	client_t* svs_clients = reinterpret_cast<client_t*>(0x31D9390);
 
@@ -410,6 +416,10 @@ namespace Game
 	unsigned short* db_hashTable = reinterpret_cast<unsigned short*>(0x12412B0);
 
 	ScriptContainer* scriptContainer = reinterpret_cast<ScriptContainer*>(0x2040D00);
+
+	clientstate_t* clcState = reinterpret_cast<clientstate_t*>(0xB2C540);
+
+	GfxScene* scene = reinterpret_cast<GfxScene*>(0x6944914);
 
 	XAssetHeader ReallocateAssetPool(XAssetType type, unsigned int newSize)
 	{
@@ -685,7 +695,7 @@ namespace Game
 
 	void Vec3Normalize(vec3_t& vec)
 	{
-		const auto length = std::sqrt(std::pow(vec[0], 2) + std::pow(vec[1], 2) + std::pow(vec[2], 2));
+		const float length = static_cast<float>(std::sqrt(std::pow(vec[0], 2) + std::pow(vec[1], 2) + std::pow(vec[2], 2)));
 		vec[0] /= length;
 		vec[1] /= length;
 		vec[2] /= length;
@@ -718,6 +728,29 @@ namespace Game
 		res[1] = mulMat[0][1] * mulVec[0] + mulMat[1][1] * mulVec[1] + mulMat[2][1] * mulVec[2];
 		res[2] = mulMat[0][2] * mulVec[0] + mulMat[1][2] * mulVec[1] + mulMat[2][2] * mulVec[2];
 		std::memmove(&solution[0], &res[0], sizeof(res));
+	}
+
+	void QuatRot(vec3_t* vec, const vec4_t* quat)
+	{
+		vec4_t q{ (*quat)[3],(*quat)[0],(*quat)[1],(*quat)[2] };
+
+		vec4_t res{ 0, (*vec)[0], (*vec)[1], (*vec)[2] };
+		vec4_t res2;
+		vec4_t quat_conj{ q[0], -q[1], -q[2], -q[3] };
+		QuatMultiply(&q, &res, &res2);
+		QuatMultiply(&res2, &quat_conj, &res);
+
+		(*vec)[0] = res[1];
+		(*vec)[1] = res[2];
+		(*vec)[2] = res[3];
+	}
+
+	void QuatMultiply(const vec4_t* q1, const vec4_t* q2, vec4_t* res)
+	{
+		(*res)[0] = (*q2)[0] * (*q1)[0] - (*q2)[1] * (*q1)[1] - (*q2)[2] * (*q1)[2] - (*q2)[3] * (*q1)[3];
+		(*res)[1] = (*q2)[0] * (*q1)[1] + (*q2)[1] * (*q1)[0] - (*q2)[2] * (*q1)[3] + (*q2)[3] * (*q1)[2];
+		(*res)[2] = (*q2)[0] * (*q1)[2] + (*q2)[1] * (*q1)[3] + (*q2)[2] * (*q1)[0] - (*q2)[3] * (*q1)[1];
+		(*res)[3] = (*q2)[0] * (*q1)[3] - (*q2)[1] * (*q1)[2] + (*q2)[2] * (*q1)[1] + (*q2)[3] * (*q1)[0];
 	}
 
 	void SortWorldSurfaces(GfxWorld* world)
@@ -797,6 +830,73 @@ namespace Game
 		Game::R_AddDebugLine(color, v3, v7);
 		Game::R_AddDebugLine(color, v4, v8);
 	}
+
+	void R_AddDebugBounds(float* color, Bounds* b, const float(*quat)[4])
+	{
+		vec3_t v[8];
+		auto* center = b->midPoint;
+		auto* halfSize = b->halfSize;
+
+		v[0][0] = -halfSize[0];
+		v[0][1] = -halfSize[1];
+		v[0][2] = -halfSize[2];
+
+		v[1][0] = halfSize[0];
+		v[1][1] = -halfSize[1];
+		v[1][2] = -halfSize[2];
+
+		v[2][0] = -halfSize[0];
+		v[2][1] = halfSize[1];
+		v[2][2] = -halfSize[2];
+
+		v[3][0] = halfSize[0];
+		v[3][1] = halfSize[1];
+		v[3][2] = -halfSize[2];
+
+		v[4][0] = -halfSize[0];
+		v[4][1] = -halfSize[1];
+		v[4][2] = halfSize[2];
+
+		v[5][0] = halfSize[0];
+		v[5][1] = -halfSize[1];
+		v[5][2] = halfSize[2];
+
+		v[6][0] = -halfSize[0];
+		v[6][1] = halfSize[1];
+		v[6][2] = halfSize[2];
+
+		v[7][0] = halfSize[0];
+		v[7][1] = halfSize[1];
+		v[7][2] = halfSize[2];
+
+		for(auto& vec : v)
+		{
+			QuatRot(&vec, quat);
+			vec[0] += center[0];
+			vec[1] += center[1];
+			vec[2] += center[2];
+		}
+
+		// bottom
+		Game::R_AddDebugLine(color, v[0], v[1]);
+		Game::R_AddDebugLine(color, v[1], v[3]);
+		Game::R_AddDebugLine(color, v[3], v[2]);
+		Game::R_AddDebugLine(color, v[2], v[0]);
+
+		// top
+		Game::R_AddDebugLine(color, v[4], v[5]);
+		Game::R_AddDebugLine(color, v[5], v[7]);
+		Game::R_AddDebugLine(color, v[7], v[6]);
+		Game::R_AddDebugLine(color, v[6], v[4]);
+
+		// verticals
+		Game::R_AddDebugLine(color, v[0], v[4]);
+		Game::R_AddDebugLine(color, v[1], v[5]);
+		Game::R_AddDebugLine(color, v[2], v[6]);
+		Game::R_AddDebugLine(color, v[3], v[7]);
+	}
+
+
 
 #pragma optimize("", off)
 	__declspec(naked) float UI_GetScoreboardLeft(void* /*a1*/)

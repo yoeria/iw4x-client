@@ -44,7 +44,7 @@ namespace Components
 
 			if (!found)
 			{
-				Logger::Error("Asset %s of type %s was loaded, but not written!", name.data(), Game::DB_GetXAssetTypeName(subAsset.type));
+				Logger::Print("Asset %s of type %s was loaded, but not written!", name.data(), Game::DB_GetXAssetTypeName(subAsset.type));
 			}
 		}
 
@@ -222,8 +222,10 @@ namespace Components
 		}
 
 		Game::XAssetHeader assetHeader = AssetHandler::FindAssetForZone(type, name, this, isSubAsset);
+
 		if (!assetHeader.data)
-		{			Logger::Error("Error: Missing asset '%s' of type '%s'\n", name.data(), Game::DB_GetXAssetTypeName(type));
+		{		
+			Logger::Error("Error: Missing asset '%s' of type '%s'\n", name.data(), Game::DB_GetXAssetTypeName(type));
 			return false;
 		}
 
@@ -510,7 +512,7 @@ namespace Components
 	// Add branding asset
 	void ZoneBuilder::Zone::addBranding()
 	{
-		char* data = "FastFile built using the IW4x ZoneBuilder!";
+		const char* data = "FastFile built using the IW4x ZoneBuilder!";
 		this->branding = { this->zoneName.data(), static_cast<int>(strlen(data)), 0, data };
 
 		if (this->findAsset(Game::XAssetType::ASSET_TYPE_RAWFILE, this->branding.name) != -1)
@@ -1306,7 +1308,7 @@ namespace Components
 
 				// HACK: set language to 'techsets' to load from that dir
 				char* language = Utils::Hook::Get<char*>(0x649E740);
-				Utils::Hook::Set<char*>(0x649E740, "techsets");
+				Utils::Hook::Set<const char*>(0x649E740, "techsets");
 
 				// load generated techset fastfiles
 				auto list = Utils::IO::ListFiles("zone/techsets");
@@ -1366,7 +1368,7 @@ namespace Components
 						info.freeFlags = Game::DB_ZONE_MOD;
 						Game::DB_LoadXAssets(&info, 1, true);
 
-						Utils::Hook::Set<char*>(0x649E740, "techsets");
+						Utils::Hook::Set<const char*>(0x649E740, "techsets");
 
 						i = 0;
 						subCount++;
