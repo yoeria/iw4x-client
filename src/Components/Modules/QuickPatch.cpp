@@ -341,7 +341,7 @@ namespace Components
 
 			// original code
 			mov eax, dword ptr[esp + 0xa0];
-			jmp collide;
+			jmp dontcollide;
 
 		collide:
 			push 0x00478376;
