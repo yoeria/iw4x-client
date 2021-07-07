@@ -132,3 +132,5 @@ namespace Components
 #include "Modules/Stats.hpp"
 
 #include "Modules/Client.hpp"
+
+#include "Modules/Command.hpp"
