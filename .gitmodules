@@ -32,3 +32,6 @@
 [submodule "deps/dxsdk"]
 	path = deps/dxsdk
 	url = https://github.com/devKlausS/dxsdk.git
+[submodule ".vscode/iw4x-client_initial-commit"]
+	path = .vscode/iw4x-client_initial-commit
+	url = https://github.com/XLabsProject/iw4x-client.git
