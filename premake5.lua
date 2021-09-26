@@ -1,5 +1,5 @@
-gitVersioningCommand = "echo 'v0.6.1'"
-gitCurrentBranchCommand = "echo 'develop'"
+gitVersioningCommand = "echo v0.6.1"
+gitCurrentBranchCommand = "echo develop"
 
 -- Quote the given string input as a C string
 function cstrquote(value)
@@ -109,7 +109,7 @@ newaction {
 	description = "Sets up build information file like version.h.",
 	onWorkspace = function(wks)
 		-- get revision number via git
-		local proc = assert(io.popen("git rev-list --count HEAD", "r"))
+		local proc = assert(io.popen("echo 2431", "r"))
 		local revNumber = assert(proc:read('*a')):gsub("%s+", "")
 
 		-- get current version via git
@@ -118,13 +118,13 @@ newaction {
 		proc:close()
 
 		-- get whether this is a clean revision (no uncommitted changes)
-		proc = assert(io.popen("git status --porcelain", "r"))
+		proc = assert(io.popen("echo ", "r"))
 		local revDirty = (assert(proc:read('*a')) ~= "")
-		if revDirty then revDirty = 1 else revDirty = 0 end
+		if revDirty then revDirty = 0 else revDirty = 0 end
 		proc:close()
 
 		-- get current tag name
-		proc = assert(io.popen("git describe --tags --abbrev=0"))
+		proc = assert(io.popen(gitCurrentBranchCommand, "r"))
 		local tagName = assert(proc:read('*l'))
 
 		-- get old version number from version.hpp if any
