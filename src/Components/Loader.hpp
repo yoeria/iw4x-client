@@ -135,3 +135,4 @@ namespace Components
 #include "Modules/Client.hpp"
 
 #include "Modules/Command.hpp"
+#include "Modules/Gamepad.hpp"
