@@ -1,5 +1,5 @@
-gitVersioningCommand = "git describe --tags --dirty --always"
-gitCurrentBranchCommand = "git symbolic-ref -q --short HEAD"
+gitVersioningCommand = "echo 'v0.6.1'"
+gitCurrentBranchCommand = "echo 'develop'"
 
 -- Quote the given string input as a C string
 function cstrquote(value)
@@ -84,12 +84,12 @@ newaction {
 	description = "Returns the version string for the current commit of the source code.",
 	onWorkspace = function(wks)
 		-- get current version via git
-		local proc = assert("v0.6.1")
+		local proc = assert(io.popen(gitVersioningCommand, "r"))
 		local gitDescribeOutput = assert(proc:read('*a')):gsub("%s+", "")
 		proc:close()
 		local version = gitDescribeOutput
 
-		proc = assert("develop")
+		proc = assert(io.popen(gitCurrentBranchCommand, "r"))
 		local gitCurrentBranchOutput = assert(proc:read('*a')):gsub("%s+", "")
 		local gitCurrentBranchSuccess = proc:close()
 		if gitCurrentBranchSuccess then
@@ -113,7 +113,7 @@ newaction {
 		local revNumber = assert(proc:read('*a')):gsub("%s+", "")
 
 		-- get current version via git
-		local proc = assert("v0.6.1")
+		local proc = assert(io.popen(gitVersioningCommand, "r"))
 		local gitDescribeOutput = assert(proc:read('*a')):gsub("%s+", "")
 		proc:close()
 
