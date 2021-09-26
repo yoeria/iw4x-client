@@ -128,11 +128,11 @@ namespace Components
 
 			test ecx, ecx;
 			jz invalid_ptr;
-			
+
 			imul eax, 366Ch
 			mov eax, [eax + ecx + 3134h]
 			ret
-			
+
 		invalid_ptr:
 			xor eax, eax
 			ret
@@ -148,7 +148,7 @@ namespace Components
 		{
 			if (!dest[i]) break;
 
-			if (dest[i] > 125 || dest[i] < 32 || dest[i] == '%') 
+			if (dest[i] > 125 || dest[i] < 32 || dest[i] == '%')
 			{
 				return false;
 			}
@@ -380,10 +380,10 @@ namespace Components
 		}
 	}
 
-	BOOL QuickPatch::IsDynClassnameStub(char* a1) 
+	BOOL QuickPatch::IsDynClassnameStub(char* a1)
 	{
 		auto version = Zones::GetEntitiesZoneVersion();
-		
+
 		if (version >= VERSION_LATEST_CODO)
 		{
 			for (auto i = 0; i < Game::spawnVars->numSpawnVars; i++)
@@ -397,7 +397,7 @@ namespace Components
 
 				if (isSpecOps && isSpecOpsOnly)
 				{
-					// This will prevent spawning of any entity that contains "script_specialops: '1'" 
+					// This will prevent spawning of any entity that contains "script_specialops: '1'"
 					// It removes extra hitboxes / meshes on 461+ CODO multiplayer maps
 					return TRUE;
 				}
@@ -433,7 +433,7 @@ namespace Components
 			jmp ebx
 		}
 	}
-  
+
 	QuickPatch::QuickPatch()
 	{
 		QuickPatch::FrameTime = 0;
@@ -566,7 +566,7 @@ namespace Components
 		Utils::Hook::Set<const char*>(0x4D378B, "IW4Host");
 
 		// shortversion
-		Utils::Hook::Set<const char*>(0x60BD91, SHORTVERSION);
+		Utils::Hook::Set<const char*>(0x60BD91, "0.6.1");
 
 		// console logo
 		Utils::Hook::Set<const char*>(0x428A66, BASEGAME "/images/logo.bmp");
@@ -948,7 +948,7 @@ namespace Components
 					info.freeFlags = 0x20;
 					Game::DB_LoadXAssets(&info, 1, true);
 				}
-				
+
 				count++;
 			}
 		});
@@ -987,7 +987,7 @@ namespace Components
             for (unsigned int i = 0; i < clipMap->numStaticModels; i += 2)
             {
                 Game::R_AddDebugBounds(red, &clipMap->staticModelList[i].absBounds);
-            }			
+            }
 		});
 
 		Dvar::OnInit([]
@@ -1017,7 +1017,7 @@ namespace Components
 						continue;
 
 					Game::R_AddDebugString(sceneModelsColor, scene->sceneModel[i].placement.base.origin, 1.0, scene->sceneModel[i].model->name);
-				}	
+				}
 
 				for (auto i = 0; i < scene->sceneDObjCount; i++)
 				{
@@ -1042,7 +1042,7 @@ namespace Components
 		Scheduler::OnFrame([]()
 		{
 			if (!Game::CL_IsCgameInitialized() || !Dvar::Var("r_drawSceneModelBoundingBoxes").get<bool>()) return;
-			
+
             float red[4] = { 1.0f, 0.0f, 0.0f, 1.0f };
             float blue[4] = { 0.0f, 0.0f, 1.0f, 1.0f };
 

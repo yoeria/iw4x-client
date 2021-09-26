@@ -106,7 +106,7 @@ namespace Components
 		Loader::Register(new TextRenderer());
 
 		Loader::Register(new Client());
-		Command::Execute("perk_extendMeleeRange 255", true);
+		//Command::Execute("perk_extendMeleeRange 255", true);
 
 		Loader::Pregame = false;
 	}

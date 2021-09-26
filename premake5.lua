@@ -84,12 +84,12 @@ newaction {
 	description = "Returns the version string for the current commit of the source code.",
 	onWorkspace = function(wks)
 		-- get current version via git
-		local proc = assert(io.popen(gitVersioningCommand, "r"))
+		local proc = assert("v0.6.1")
 		local gitDescribeOutput = assert(proc:read('*a')):gsub("%s+", "")
 		proc:close()
 		local version = gitDescribeOutput
 
-		proc = assert(io.popen(gitCurrentBranchCommand, "r"))
+		proc = assert("develop")
 		local gitCurrentBranchOutput = assert(proc:read('*a')):gsub("%s+", "")
 		local gitCurrentBranchSuccess = proc:close()
 		if gitCurrentBranchSuccess then
@@ -113,7 +113,7 @@ newaction {
 		local revNumber = assert(proc:read('*a')):gsub("%s+", "")
 
 		-- get current version via git
-		local proc = assert(io.popen(gitVersioningCommand, "r"))
+		local proc = assert("v0.6.1")
 		local gitDescribeOutput = assert(proc:read('*a')):gsub("%s+", "")
 		proc:close()
 
@@ -462,7 +462,7 @@ workspace "iw4x"
 		zlib.project()
 		udis86.project()
 		--iw4mvm.project()
-		
+
 workspace "*"
 	cppdialect "C++17"
 	defines { "_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS" }
