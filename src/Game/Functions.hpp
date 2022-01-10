@@ -121,7 +121,7 @@ namespace Game
 	typedef void(__cdecl * Com_ClientPacketEvent_t)();
 	extern Com_ClientPacketEvent_t Com_ClientPacketEvent;
 
-	typedef void(__cdecl * Com_Error_t)(int type, const char* message, ...);
+	typedef void(__cdecl * Com_Error_t)(errorParm_t type, const char* message, ...);
 	extern Com_Error_t Com_Error;
 
 	typedef void(__cdecl * Com_Printf_t)(int channel, const char *fmt, ...);
@@ -289,6 +289,9 @@ namespace Game
 	typedef dvar_t* (__cdecl * Dvar_SetCommand_t)(const char* name, const char* value);
 	extern Dvar_SetCommand_t Dvar_SetCommand;
 
+	typedef const char* (__cdecl * Dvar_DisplayableValue_t)(const dvar_t* cvar);
+	extern Dvar_DisplayableValue_t Dvar_DisplayableValue;
+
 	typedef bool(__cdecl * Encode_Init_t)(const char* );
 	extern Encode_Init_t Encode_Init;
 
@@ -297,6 +300,9 @@ namespace Game
 
 	typedef void(__cdecl * FreeMemory_t)(void* buffer);
 	extern FreeMemory_t FreeMemory;
+
+	typedef void (__cdecl * Free_String_t)(const char* string);
+	extern Free_String_t Free_String;
 
 	typedef void(__cdecl * FS_FreeFile_t)(void* buffer);
 	extern FS_FreeFile_t FS_FreeFile;
@@ -355,6 +361,9 @@ namespace Game
 
 	typedef iwd_t*(__cdecl * FS_IsShippedIWD_t)(const char* fullpath, const char* iwd);
 	extern FS_IsShippedIWD_t FS_IsShippedIWD;
+
+	typedef int(__cdecl* FS_Delete_t)(const char* fileName);
+	extern FS_Delete_t FS_Delete;
 
 	typedef int(__cdecl* G_GetWeaponIndexForName_t)(char*);
 	extern G_GetWeaponIndexForName_t G_GetWeaponIndexForName;
@@ -750,6 +759,9 @@ namespace Game
 	typedef void(__cdecl * SV_Cmd_EndTokenizedString_t)();
 	extern SV_Cmd_EndTokenizedString_t SV_Cmd_EndTokenizedString;
 
+	typedef void(__cdecl * SV_Cmd_ArgvBuffer_t)(int arg, char* buf, int size);
+	extern SV_Cmd_ArgvBuffer_t SV_Cmd_ArgvBuffer;
+
 	typedef void(__cdecl * SV_SetConfigstring_t)(int index, const char* string);
 	extern SV_SetConfigstring_t SV_SetConfigstring;
 
@@ -882,6 +894,15 @@ namespace Game
 	typedef void(__cdecl * AimAssist_ApplyAutoMelee_t)(const AimInput* input, AimOutput* output);
 	extern AimAssist_ApplyAutoMelee_t AimAssist_ApplyAutoMelee;
 
+	typedef void(__cdecl * Jump_ClearState_t)(playerState_s* ps);
+	extern Jump_ClearState_t Jump_ClearState;
+
+	typedef void(__cdecl * PM_playerTrace_t)(pmove_s*, trace_t*, const float*, const float*, const Bounds*, int, int);
+	extern PM_playerTrace_t PM_playerTrace;
+
+	typedef void(__cdecl * PM_Trace_t)(pmove_s*, trace_t*, const float*, const float*, const Bounds*, int, int);
+	extern PM_Trace_t PM_Trace;
+
 	extern XAssetHeader* DB_XAssetPool;
 	extern unsigned int* g_poolSize;
 
@@ -932,6 +953,7 @@ namespace Game
 	extern int* serverMessageSequence;
 
 	constexpr auto MAX_GENTITIES = 2048u;
+	constexpr auto ENTITYNUM_NONE = MAX_GENTITIES - 1;
 	extern gentity_t* g_entities;
 
 	extern netadr_t* connectedHost;
@@ -1000,6 +1022,8 @@ namespace Game
 
 	constexpr auto AIM_ASSIST_GRAPH_COUNT = 4u;
 	extern GraphFloat* aaInputGraph;
+
+	extern vec3_t* CorrectSolidDeltas;
 
 	XAssetHeader ReallocateAssetPool(XAssetType type, unsigned int newSize);
 	void Menu_FreeItemMemory(Game::itemDef_s* item);
@@ -1075,4 +1099,6 @@ namespace Game
 
 	void AimAssist_UpdateTweakables(int localClientNum);
 	void AimAssist_UpdateAdsLerp(const AimInput* input);
+
+	void Dvar_SetVariant(dvar_t* var, DvarValue value, DvarSetSource source);
 }

@@ -116,12 +116,14 @@ namespace Game
 	Dvar_FindVar_t Dvar_FindVar = Dvar_FindVar_t(0x4D5390);
 	Dvar_InfoString_Big_t Dvar_InfoString_Big = Dvar_InfoString_Big_t(0x4D98A0);
 	Dvar_SetCommand_t Dvar_SetCommand = Dvar_SetCommand_t(0x4EE430);
+	Dvar_DisplayableValue_t Dvar_DisplayableValue = Dvar_DisplayableValue_t(0x4B5530);
 
 	Encode_Init_t Encode_Init = Encode_Init_t(0x462AB0);
 
 	Field_Clear_t Field_Clear = Field_Clear_t(0x437EB0);
 
 	FreeMemory_t FreeMemory = FreeMemory_t(0x4D6640);
+	Free_String_t Free_String = Free_String_t(0x470E80);
 
 	FS_FileExists_t FS_FileExists = FS_FileExists_t(0x4DEFA0);
 	FS_FreeFile_t FS_FreeFile = FS_FreeFile_t(0x4416B0);
@@ -144,6 +146,7 @@ namespace Game
 	FS_Restart_t FS_Restart = FS_Restart_t(0x461A50);
 	FS_BuildPathToFile_t FS_BuildPathToFile = FS_BuildPathToFile_t(0x4702C0);
 	FS_IsShippedIWD_t FS_IsShippedIWD = FS_IsShippedIWD_t(0x642440);
+	FS_Delete_t FS_Delete = FS_Delete_t(0x48A5B0);
 
 	G_GetWeaponIndexForName_t G_GetWeaponIndexForName = G_GetWeaponIndexForName_t(0x49E540);
 	G_SpawnEntitiesFromString_t G_SpawnEntitiesFromString = G_SpawnEntitiesFromString_t(0x4D8840);
@@ -314,6 +317,7 @@ namespace Game
 	SV_GameSendServerCommand_t SV_GameSendServerCommand = SV_GameSendServerCommand_t(0x4BC3A0);
 	SV_Cmd_TokenizeString_t SV_Cmd_TokenizeString = SV_Cmd_TokenizeString_t(0x4B5780);
 	SV_Cmd_EndTokenizedString_t SV_Cmd_EndTokenizedString = SV_Cmd_EndTokenizedString_t(0x464750);
+	SV_Cmd_ArgvBuffer_t SV_Cmd_ArgvBuffer = SV_Cmd_ArgvBuffer_t(0x40BB60);
 	SV_DirectConnect_t SV_DirectConnect = SV_DirectConnect_t(0x460480);
 	SV_SetConfigstring_t SV_SetConfigstring = SV_SetConfigstring_t(0x4982E0);
 	SV_Loaded_t SV_Loaded = SV_Loaded_t(0x4EE3E0);
@@ -372,6 +376,10 @@ namespace Game
 	Field_Draw_t Field_Draw = Field_Draw_t(0x4F5B40);
 	Field_AdjustScroll_t Field_AdjustScroll = Field_AdjustScroll_t(0x488C10);
 	AimAssist_ApplyAutoMelee_t AimAssist_ApplyAutoMelee = AimAssist_ApplyAutoMelee_t(0x56A360);
+
+	Jump_ClearState_t Jump_ClearState = Jump_ClearState_t(0x04B3890);
+	PM_playerTrace_t PM_playerTrace = PM_playerTrace_t(0x458980);
+	PM_Trace_t PM_Trace = PM_Trace_t(0x441F60);
 
 	XAssetHeader* DB_XAssetPool = reinterpret_cast<XAssetHeader*>(0x7998A8);
 	unsigned int* g_poolSize = reinterpret_cast<unsigned int*>(0x7995E8);
@@ -488,6 +496,8 @@ namespace Game
 	keyname_t* localizedKeyNames = reinterpret_cast<keyname_t*>(0x798880);
 
 	GraphFloat* aaInputGraph = reinterpret_cast<GraphFloat*>(0x7A2FC0);
+
+	vec3_t* CorrectSolidDeltas = reinterpret_cast<vec3_t*>(0x739BB8); // Count 26
 
 	XAssetHeader ReallocateAssetPool(XAssetType type, unsigned int newSize)
 	{
@@ -1488,6 +1498,29 @@ namespace Game
 			mov eax, [esp + 0x4]
 			mov ebx, 0x569AA0
 			call ebx
+			retn
+		}
+	}
+
+	__declspec(naked) void Dvar_SetVariant(dvar_t*, DvarValue, DvarSetSource)
+	{
+		__asm
+		{
+			pushad
+
+			mov eax, [esp + 0x4 + 0x20] // dvar
+			push[esp + 0x18 + 0x20] // source
+			push[esp + 0x18 + 0x20] // value
+			push[esp + 0x18 + 0x20] // value
+			push[esp + 0x18 + 0x20] // value
+			push[esp + 0x18 + 0x20] // value
+
+			mov ebx, 0x647400
+			call ebx
+			add esp, 0x14
+
+			popad
+
 			retn
 		}
 	}

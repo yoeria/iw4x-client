@@ -26,7 +26,7 @@ namespace Components
 		Logger::Print(23, "Error: unknown function %s in %s\n", funcName.data(), Script::ScriptName.data());
 		Logger::Print(23, "************************************\n");
 
-		Logger::Error(5, "script compile error\nunknown function %s\n%s\n\n", funcName.data(), Script::ScriptName.data());
+		Logger::Error(Game::ERR_SCRIPT_DROP, "script compile error\nunknown function %s\n%s\n\n", funcName.data(), Script::ScriptName.data());
 	}
 
 	__declspec(naked) void Script::StoreFunctionNameStub()
@@ -170,7 +170,7 @@ namespace Components
 		Script::PrintSourcePos(Script::ScriptName.data(), offset);
 		Logger::Print(23, "************************************\n\n");
 
-		Logger::Error(5, "script compile error\n%s\n%s\n(see console for actual details)\n", msgbuf, Script::ScriptName.data());
+		Logger::Error(Game::ERR_SCRIPT_DROP, "script compile error\n%s\n%s\n(see console for actual details)\n", msgbuf, Script::ScriptName.data());
 	}
 
 	int Script::LoadScriptAndLabel(const std::string& script, const std::string& label)
@@ -180,7 +180,7 @@ namespace Components
 		if (!Game::Scr_LoadScript(script.data()))
 		{
 			Logger::Print("Script %s encountered an error while loading. (doesn't exist?)", script.data());
-			Logger::Error(1, reinterpret_cast<char*>(0x70B810), script.data());
+			Logger::Error(Game::ERR_DROP, reinterpret_cast<char*>(0x70B810), script.data());
 		}
 		else
 		{
@@ -497,7 +497,7 @@ namespace Components
 	{
 		if (!gentity->client)
 		{
-			Logger::Error(5, "Entity: %i is not a client", gentity);
+			Logger::Error(Game::ERR_SCRIPT_DROP, "Entity: %i is not a client", gentity);
 		}
 		return &Game::svs_clients[gentity->s.number];
 	}
@@ -634,56 +634,6 @@ namespace Components
 		Script::AddFunction("StorageClear", [](Game::scr_entref_t) // gsc: StorageClear();
 		{
 			Script::ScriptStorage.clear();
-		});
-
-		Script::AddFunction("Noclip", [](Game::scr_entref_t entref)
-		{
-			if (entref >= Game::MAX_GENTITIES || Game::g_entities[entref].client == nullptr)
-			{
-				Game::Scr_Error(Utils::String::VA("^1NoClip: entity %u is not a client\n", entref));
-				return;
-			}
-
-			if (Game::Scr_GetNumParam() == 1 && Game::Scr_GetType(0) == Game::VAR_INTEGER)
-			{
-				if (Game::Scr_GetInt(0))
-				{
-					Game::g_entities[entref].client->flags |= Game::PLAYER_FLAG_NOCLIP;
-				}
-				else
-				{
-					Game::g_entities[entref].client->flags &= ~Game::PLAYER_FLAG_NOCLIP;
-				}
-			}
-			else
-			{
-				Game::g_entities[entref].client->flags ^= Game::PLAYER_FLAG_NOCLIP;
-			}
-		});
-
-		Script::AddFunction("Ufo", [](Game::scr_entref_t entref)
-		{
-			if (entref >= Game::MAX_GENTITIES || Game::g_entities[entref].client == nullptr)
-			{
-				Game::Scr_Error(Utils::String::VA("^1Ufo: entity %u is not a client\n", entref));
-				return;
-			}
-
-			if (Game::Scr_GetNumParam() == 1 && Game::Scr_GetType(0) == Game::VAR_INTEGER)
-			{
-				if (Game::Scr_GetInt(0))
-				{
-					Game::g_entities[entref].client->flags |= Game::PLAYER_FLAG_UFO;
-				}
-				else
-				{
-					Game::g_entities[entref].client->flags &= ~Game::PLAYER_FLAG_UFO;
-				}
-			}
-			else
-			{
-				Game::g_entities[entref].client->flags ^= Game::PLAYER_FLAG_UFO;
-			}			
 		});
 	}
 

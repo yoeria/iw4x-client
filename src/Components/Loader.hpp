@@ -133,6 +133,8 @@ namespace Components
 #include "Modules/Chat.hpp"
 #include "Modules/TextRenderer.hpp"
 #include "Modules/Movement.hpp"
+#include "Modules/Elevators.hpp"
+#include "Modules/ClientCommand.hpp"
 
 #include "Modules/Client.hpp"
 

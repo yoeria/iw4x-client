@@ -968,6 +968,7 @@ namespace Components
 			}
 		});
 
+<<<<<<< HEAD
 		Scheduler::OnFrame([]()
 		{
 			if (!Game::CL_IsCgameInitialized() || !Dvar::Var("r_drawAabbTrees").get<bool>()) return;
@@ -1166,6 +1167,8 @@ namespace Components
 		});
 
 
+=======
+>>>>>>> 37689b6f8eaac2087513cbf97f11e0cf95fd7753
 		// Dvars
 		Dvar::Register<bool>("ui_streamFriendly", false, Game::DVAR_FLAG_SAVED, "Stream friendly UI");
 

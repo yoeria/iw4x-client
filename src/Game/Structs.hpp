@@ -177,6 +177,65 @@ namespace Game
 		CS_ACTIVE = 0x5,
 	} clientstate_t;
 
+	typedef enum
+	{
+		ERR_FATAL = 0x0,
+		ERR_DROP = 0x1,
+		ERR_SERVERDISCONNECT = 0x2,
+		ERR_DISCONNECT = 0x3,
+		ERR_SCRIPT = 0x4,
+		ERR_SCRIPT_DROP = 0x5,
+		ERR_LOCALIZATION = 0x6,
+		ERR_MAPLOADERRORSUMMARY = 0x7
+	} errorParm_t;
+
+	enum entityFlag
+	{
+		FL_GODMODE = 0x1,
+		FL_DEMI_GODMODE = 0x2,
+		FL_NOTARGET = 0x4,
+		FL_NO_KNOCKBACK = 0x8,
+		FL_NO_RADIUS_DAMAGE = 0x10,
+		FL_SUPPORTS_LINKTO = 0x1000,
+		FL_NO_AUTO_ANIM_UPDATE = 0x2000,
+		FL_GRENADE_TOUCH_DAMAGE = 0x4000,
+		FL_STABLE_MISSILES = 0x20000,
+		FL_REPEAT_ANIM_UPDATE = 0x40000,
+		FL_VEHICLE_TARGET = 0x80000,
+		FL_GROUND_ENT = 0x100000,
+		FL_CURSOR_HINT = 0x200000,
+		FL_MISSILE_ATTRACTOR = 0x800000,
+		FL_WEAPON_BEING_GRABBED = 0x1000000,
+		FL_DELETE = 0x2000000,
+		FL_BOUNCE = 0x4000000,
+		FL_MOVER_SLIDE = 0x8000000
+	};
+
+	typedef enum
+	{
+		HITLOC_NONE,
+		HITLOC_HELMET,
+		HITLOC_HEAD,
+		HITLOC_NECK,
+		HITLOC_TORSO_UPR,
+		HITLOC_TORSO_LWR,
+		HITLOC_R_ARM_UPR,
+		HITLOC_L_ARM_UPR,
+		HITLOC_R_ARM_LWR,
+		HITLOC_L_ARM_LWR,
+		HITLOC_R_HAND,
+		HITLOC_L_HAND,
+		HITLOC_R_LEG_UPR,
+		HITLOC_L_LEG_UPR,
+		HITLOC_R_LEG_LWR,
+		HITLOC_L_LEG_LWR,
+		HITLOC_R_FOOT,
+		HITLOC_L_FOOT,
+		HITLOC_GUN,
+		HITLOC_SHIELD,
+		HITLOC_NUM
+	} hitLocation_t;
+
 	struct FxEffectDef;
 	struct pathnode_t;
 	struct pathnode_tree_t;
@@ -1098,7 +1157,7 @@ namespace Game
 		int unpredictableEventSequenceOld;
 		int unpredictableEvents[4];
 		unsigned int unpredictableEventParms[4];
-		int clientNum;
+		int clientNum; // 260
 		int viewmodelIndex;
 		float viewangles[3];
 		int viewHeightTarget;
@@ -5314,20 +5373,41 @@ namespace Game
 		PLAYER_FLAG_FROZEN = 1 << 2,
 	};
 
+	typedef enum
+	{
+		SESS_STATE_PLAYING = 0x0,
+		SESS_STATE_DEAD = 0x1,
+		SESS_STATE_SPECTATOR = 0x2,
+		SESS_STATE_INTERMISSION = 0x3
+	} sessionState_t;
+
+	typedef enum
+	{
+		CON_DISCONNECTED = 0x0,
+		CON_CONNECTING = 0x1,
+		CON_CONNECTED = 0x2
+	} clientConnected_t;
+
 	typedef struct gclient_s
 	{
-		unsigned char pad[12764];
-		unsigned int team;
+		playerState_s ps;
+		sessionState_t sessionState; // 12572
+		char pad0[40];
+		clientConnected_t connected; // 12616
+		char pad1[144];
+		unsigned int team; // 12764
 		char pad2[436];
-		int flags;
+		int flags; // 13204
 		int spectatorClient;
 		int lastCmdTime;
 		int buttons;
-		int oldbuttons;
-		int latched_buttons;
-		int buttonsSinceLastFrame;
-		char pad3[700];
+		int oldbuttons; // 13220
+		int latched_buttons; // 13224
+		int buttonsSinceLastFrame; // 13228
+		char pad3[700]; // 13232
 	} gclient_t;
+
+	static_assert(sizeof(gclient_t) == 13932);
 
 	struct EntHandle
 	{
@@ -6896,15 +6976,43 @@ namespace Game
 		const char* args[9];
 	};
 
+	enum TraceHitType
+	{
+		TRACE_HITTYPE_NONE = 0,
+		TRACE_HITTYPE_ENTITY = 1,
+		TRACE_HITTYPE_DYNENT_MODEL = 2,
+		TRACE_HITTYPE_DYNENT_BRUSH = 3,
+		TRACE_HITTYPE_GLASS = 4
+	};
+
+	struct trace_t
+	{
+		float fraction;
+		float normal[3];
+		int surfaceFlags;
+		int contents;
+		const char* material;
+		TraceHitType hitType;
+		unsigned __int16 hitId;
+		unsigned __int16 modelIndex;
+		unsigned __int16 partName;
+		unsigned __int16 partGroup;
+		bool allsolid;
+		bool startsolid;
+		bool walkable;
+	};
+
+	static_assert(sizeof(trace_t) == 0x2C);
+
 	struct pmove_s
 	{
 		playerState_s* ps;
 		usercmd_s cmd;
 		usercmd_s oldcmd;
-		int tracemask;
+		int tracemask; // 84
 		int numtouch;
 		int touchents[32];
-		char __pad0[24];
+		Bounds bounds; // 220
 		float xyspeed;
 		int proneChange;
 		float maxSprintTimeMultiplier;
@@ -6917,6 +7025,27 @@ namespace Game
 		float fWaistPitch;
 		unsigned char handler;
 	};
+
+	static_assert(sizeof(pmove_s) == 296);
+
+	struct pml_t
+	{
+		float forward[3];
+		float right[3];
+		float up[3];
+		float frametime;
+		int msec;
+		int walking;
+		int groundPlane;
+		int almostGroundPlane;
+		trace_t groundTrace;
+		float impactSpeed;
+		float previous_origin[3];
+		float previous_velocity[3];
+		int holdrand;
+	};
+
+	static_assert(sizeof(pml_t) == 0x84);
 
 	enum EffectiveStance
 	{
